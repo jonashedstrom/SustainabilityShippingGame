@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sustainability Shipping Game</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23061b22'/%3E%3Cpath d='M30 48C12 47 9 29 17 11c17 4 27 18 23 34-3 2-6 3-10 3Z' fill='%2358dfbe'/%3E%3Cpath d='M39 48c-10-6-16-18-21-31' stroke='%23f4fffb' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3Cpath d='M25 28c6 2 10 5 14 10M22 36c5 1 9 4 13 8' stroke='%23f4fffb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3Cpath d='M39 49c-1-14 8-24 20-29 3 17-4 28-17 31-1 0-2-1-3-2Z' fill='%233abf6b'/%3E%3Cpath d='M42 49c4-11 9-19 16-26' stroke='%23f4fffb' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3Cpath d='M47 37c4-1 7-3 10-6M45 43c4-1 7-3 11-5' stroke='%23f4fffb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <section class="topbar" aria-label="Game status">
+        <div class="brand">
+          <span class="mark leaf-mark" aria-label="Green leaf"></span>
+          <div>
+            <h1>Sustainability Shipping Game</h1>
+            <p>Balance engine power, currents, wind, and sails.</p>
+          </div>
+        </div>
+        <div class="status-strip">
+          <div class="metric">
+            <span>Goal distance</span>
+            <strong id="goalTime">24 nm</strong>
+          </div>
+          <div class="metric">
+            <span>Gasoline</span>
+            <strong id="fuelReadout">100%</strong>
+          </div>
+          <div class="metric">
+            <span>Sailed</span>
+            <strong id="scoreReadout">0</strong>
+          </div>
+          <div class="top-actions" aria-label="Game controls">
+            <button id="pauseButton" type="button">Pause</button>
+            <button id="restartButton" type="button">Restart</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="play-area">
+        <aside class="panel left-panel">
+          <div class="gauge">
+            <span class="label">Actual speed</span>
+            <strong><span id="speedReadout">12.0</span> kn</strong>
+            <div class="speed-ring" aria-hidden="true">
+              <div id="speedNeedle"></div>
+            </div>
+          </div>
+
+          <div class="slider-block readout-block">
+            <span>Engine throttle</span>
+            <strong><span id="throttleReadout">0</span>% gas</strong>
+            <input id="engineSlider" type="range" min="0" max="100" step="1" value="25" aria-label="Engine throttle" />
+            <div class="progress-track throttle-track" aria-hidden="true"><div id="throttleGauge"></div></div>
+            <div class="burn-scale" aria-hidden="true">
+              <span>Fuel burn: low</span>
+              <span>high</span>
+            </div>
+          </div>
+
+          <div class="slider-block readout-block">
+            <span>Voyage progress</span>
+            <strong><span id="targetReadout">0.0</span> / <span id="trimReadout">24</span> nm</strong>
+            <div class="progress-track" aria-hidden="true"><div id="voyageProgress"></div></div>
+          </div>
+
+          <div class="slider-block readout-block">
+            <span>Gasoline rule</span>
+            <p>Up arrow adds gas. Down arrow slows down by lowering gas. More gas burns more fuel.</p>
+          </div>
+
+          <button id="sailButton" class="sail-button" type="button" aria-pressed="false">
+            Deploy wing sails
+          </button>
+        </aside>
+
+        <div class="canvas-wrap">
+          <canvas id="gameCanvas" width="1280" height="720" aria-label="Top-down shipping game"></canvas>
+          <div class="condition-legend" aria-label="Current and wind legend">
+            <span class="legend-title">Live conditions</span>
+            <div id="currentLegendRow" class="legend-row">
+              <i id="currentLegendIcon" class="legend-arrow current"></i>
+              <div>
+                <strong id="currentLegendTitle">Current</strong>
+                <span id="currentLegendText">Green arrows show ocean current.</span>
+              </div>
+            </div>
+            <div id="windLegendRow" class="legend-row">
+              <i id="windLegendIcon" class="legend-arrow wind"></i>
+              <div>
+                <strong id="windLegendTitle">Wind</strong>
+                <span id="windLegendText">White curved arrows show wind.</span>
+              </div>
+            </div>
+          </div>
+          <div id="message" class="message splash">
+            <div class="splash-mark leaf-mark" aria-label="Green leaf"></div>
+            <strong>Sustainability Shipping Game</strong>
+            <span class="splash-copy">Pilot a hybrid engine-and-sail vessel through changing sea conditions.</span>
+            <ul>
+              <li>Reach the required nautical miles before the fuel runs out.</li>
+              <li>Use less engine power when blue currents push you forward.</li>
+              <li>Add gas only when you need it. High engine throttle burns fuel fast.</li>
+              <li>Deploy wing sails when wind helps. They save fuel automatically.</li>
+              <li>Avoid islands and other ships. Saving fuel at sea cuts emissions.</li>
+            </ul>
+            <div class="difficulty-select" role="group" aria-label="Choose difficulty">
+              <button type="button" data-difficulty="easy">Easy<br><span>12 nm</span></button>
+              <button type="button" data-difficulty="medium" class="selected">Medium<br><span>24 nm</span></button>
+              <button type="button" data-difficulty="hard">Hard<br><span>36 nm</span></button>
+              <button type="button" data-difficulty="captain">Kick-Ass Captain<br><span>48 nm</span></button>
+            </div>
+            <button id="startButton" type="button">Start voyage</button>
+          </div>
+        </div>
+
+        <aside class="panel right-panel">
+          <div class="phase-card">
+            <span class="label">Current</span>
+            <strong id="currentReadout">Calm water</strong>
+            <p id="currentHelp">Hold neutral speed and stay inside the target band.</p>
+          </div>
+          <div class="phase-card">
+            <span class="label">Wind</span>
+            <strong id="windReadout">Light tailwind</strong>
+            <p id="windHelp">Wind changes automatically. Deploy sails when it helps.</p>
+          </div>
+          <div id="sailTip" class="sail-tip">
+            Watch the wind. Sails are either deployed or reefed.
+          </div>
+          <div class="efficiency">
+            <span>Fuel strategy</span>
+            <div id="leafRow" class="leaf-row" aria-hidden="true"></div>
+            <strong id="bonusReadout">Sail assist: idle</strong>
+          </div>
+          <div class="controls">
+            <span class="controls-title">Controls</span>
+            <div class="control-row">
+              <b>Speed up / slow down</b>
+              <div class="key-pair"><kbd>↑</kbd><kbd>↓</kbd></div>
+            </div>
+            <div class="control-row">
+              <b>Steer</b>
+              <div class="key-pair"><kbd>←</kbd><kbd>→</kbd></div>
+            </div>
+            <div class="control-row">
+              <b>Sails</b>
+              <div class="key-pair"><kbd>Space</kbd></div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="mobile-controls" aria-label="Touch controls">
+        <button data-key="ArrowLeft" type="button">←</button>
+        <button data-key="ArrowUp" type="button">↑</button>
+        <button data-key="ArrowDown" type="button">↓</button>
+        <button data-key="ArrowRight" type="button">→</button>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
